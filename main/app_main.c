@@ -73,7 +73,7 @@ extern const uint8_t iot_eclipse_org_pem_end[]   asm("_binary_iot_eclipse_org_pe
 
 /**@brief get a value from JSON strings
  */
-bool json_find_uint8(cJSON* item, char* str, uint8_t* value)
+bool json_find_uint8(const cJSON* item, char* str, uint8_t* value)
 {
     /*  return with error when there is no JSON content */
     bool return_code = true;
@@ -88,12 +88,12 @@ bool json_find_uint8(cJSON* item, char* str, uint8_t* value)
     while (subitem)
     {
         /*  when the object is wrong the next object gets compared */
-        if(strncmp(subitem->string, token, (sizeof(token)/sizeof(token[0]))))
+        if(strncmp(subitem->string, token, strlen(token)))
         {
-            subitem=subitem->next;
+            subitem = subitem->next;
         /*  if the object is right the childobjects get compared */
         }else if (subitem->child && str){
-            subitem=subitem->child;
+            subitem = subitem->child;
             token = strtok_r(str, "/", &str);
         /*  when the whole objectpath is found */
         }else if (!str && cJSON_IsNumber(subitem)){
@@ -115,16 +115,16 @@ bool json_find_uint8(cJSON* item, char* str, uint8_t* value)
  * @details calls json_find_uint8 to get the new position for the blinds and
  * controls a Relay according to the new position
  */
-void received_callback(esp_mqtt_event_handle_t event)
+void received_callback(const esp_mqtt_event_handle_t event)
 {
     printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
     printf("DATA=%.*s\r\n", event->data_len, event->data);
 
-    char *topic = MQTT_BLINDS_TOPIC;
-    if (strncmp(event->topic, topic, (sizeof(topic)/sizeof(topic[0]))) == 0)
+    const char *topic = MQTT_BLINDS_TOPIC;
+    if (strncmp(event->topic, topic, strlen(topic)) == 0)
     {
         uint8_t value;
-        char string[] = "value";
+        const char string[] = "value";
         if (json_find_uint8(cJSON_Parse(event->data),
             string, &value) == 0)
         {
