@@ -46,7 +46,6 @@ static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
             break;
         case SYSTEM_EVENT_STA_GOT_IP:
             xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-
             break;
         case SYSTEM_EVENT_STA_DISCONNECTED:
             esp_wifi_connect();
@@ -95,9 +94,9 @@ bool json_find_uint8(const cJSON* item, char* str, uint8_t* value)
         }else if (subitem->child && str){
             subitem = subitem->child;
             token = strtok_r(str, "/", &str);
-        /*  when the whole objectpath is found */
+        /*  when the whole objectpath is found and the objects value is a integer */
         }else if (!str && cJSON_IsNumber(subitem)){
-            int new_value = subitem->valueint;
+            const int new_value = subitem->valueint;
             /*  value for Blinds can only be 0-100% */
             if (new_value <= 100 && new_value >= 0)
             {
