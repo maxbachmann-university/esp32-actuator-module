@@ -123,7 +123,7 @@ void received_callback(const esp_mqtt_event_handle_t event)
     if (strncmp(event->topic, topic, strlen(topic)) == 0)
     {
         uint8_t value;
-        const char string[] = "value";
+        char string[] = "value";
         if (json_find_uint8(cJSON_Parse(event->data),
             string, &value) == 0)
         {
