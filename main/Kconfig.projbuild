@@ -1,0 +1,50 @@
+menu "Example Configuration"
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the App to connect to.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the App to use.
+
+    config BROKER_HOST
+        string "Broker Host"
+        default "iot.eclipse.org"
+        help
+            IPv4 of the mqtt broker which this App connects to.
+
+    config BROKER_PORT
+        int "Broker Port"
+        default 8883
+        help
+            Port of the mqtt broker which this App connects to.
+
+    config BROKER_USERNAME
+        string "Broker Username"
+        default "user"
+        help
+            Username of the mqtt broker which this App connects to.
+
+    config BROKER_PASSWORD
+        string "Broker Password"
+        default "password"
+        help
+            Password of the mqtt broker which this App connects to.
+
+    config BROKER_CERTIFICATE_OVERRIDE
+        string "Broker certificate override"
+        default ""
+        help
+            Please leave empty if broker certificate included from a textfile; otherwise fill in a base64 part of PEM
+            format certificate
+
+    config BROKER_CERTIFICATE_OVERRIDDEN
+        bool
+        default y if BROKER_CERTIFICATE_OVERRIDE != ""
+
+endmenu
