@@ -23,5 +23,6 @@ esp_err_t nvs_flash_initialize(void)
         error_code = nvs_flash_init();
     }
     ESP_ERROR_CHECK( error_code );
+    ESP_LOGI(TAG, "NVS FLASH initialized");
     return ESP_OK;
 }

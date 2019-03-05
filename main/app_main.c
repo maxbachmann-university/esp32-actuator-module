@@ -2,7 +2,10 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#include "esp_system.h"
+#include "esp_log.h"
 
+/*  TASKS */
 #include "wifi_task.h"
 #include "mqtts_task.h"
 #include "motor_control_task.h"
@@ -10,26 +13,7 @@
 #include "position_queue.h"
 #include "nvs_flash_initialize.h"
 
-#include "esp_system.h"
-#include "esp_event_loop.h"
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/queue.h"
-
-#include "lwip/sockets.h"
-#include "lwip/dns.h"
-#include "lwip/netdb.h"
-
-#include "esp_log.h"
-
-#include "rom/ets_sys.h"
-
 static const char *TAG = "MOTOR_CONTROL_MAIN";
-
-/***************************************************************************************************
- * @section Main
- **************************************************************************************************/
 
 void app_main()
 {

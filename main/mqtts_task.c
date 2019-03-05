@@ -12,12 +12,17 @@
 
 static const char *TAG = "MQTTS_TASK";
 
+/*  Allows overriding the tls_cert.pem by adding the key using "flash menuconfig"
+* (file tls_cert.pem must still exist, since it´s loaded into the .rodata section anyways)*/
 #if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
-static const uint8_t iot_eclipse_org_pem_start[]  = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
+static const uint8_t tls_cert_pem_start[]  = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
+/*  a file with tls data is added to the .rodata section in flash and will be
+*   accessed via symbol names */
 #else
-extern const uint8_t iot_eclipse_org_pem_start[]   asm("_binary_iot_eclipse_org_pem_start");
+extern const uint8_t tls_cert_pem_start[]   asm("_binary_tls_cert_pem_start");
 #endif
-extern const uint8_t iot_eclipse_org_pem_end[]   asm("_binary_iot_eclipse_org_pem_end");
+extern const uint8_t tls_cert_pem_end[]   asm("_binary_tls_cert_pem_end");
+
 
 /**@brief get a value from JSON strings
  */
@@ -35,7 +40,9 @@ static esp_err_t json_find_uint8(const cJSON* item, char* str, uint8_t* value)
     /*  while there are objects to compare */
     while (subitem)
     {
-        /*  when the object is wrong the next object gets compared */
+        /*  when the object is wrong the next object gets compared
+        * strlen can be used since strings from strtok_r are always
+        * \0 terminated*/
         if(strncmp(subitem->string, token, strlen(token)))
         {
             subitem = subitem->next;
@@ -69,6 +76,7 @@ static void received_callback(const esp_mqtt_event_handle_t event)
     printf("DATA=%.*s\r\n", event->data_len, event->data);
 
     const char *topic = MQTT_BLINDS_TOPIC;
+    /*  strlen can be used since the topic string always \0 terminated */
     if (strncmp(event->topic, topic, strlen(topic)) == 0)
     {
         uint8_t value;
@@ -145,7 +153,7 @@ esp_err_t mqtts_task_init(void)
         .username = CONFIG_BROKER_USERNAME,
         .password = CONFIG_BROKER_PASSWORD,
         .event_handle = mqtt_event_handler,
-        //.cert_pem = (const char *)iot_eclipse_org_pem_start,
+        //.cert_pem = (const char *)tls_cert_pem_start,
     };
 
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
