@@ -1,1 +1,2 @@
 COMPONENT_EMBED_TXTFILES := tls_cert.pem
+COMPONENT_EMBED_TXTFILES := cert.pem

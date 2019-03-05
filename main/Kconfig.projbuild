@@ -36,6 +36,16 @@ menu "Example Configuration"
         help
             Password of the mqtt broker which this App connects to.
 
+    config UPDATE_JSON_URL
+        string "Update JSON URL"
+        default ""
+        help
+            URL of JSON file with information on the latest firmware
+
+    config OTA_UPDATE_ACTIVATED
+        bool
+        default y if UPDATE_JSON_URL != ""
+
     config BROKER_CERTIFICATE_OVERRIDE
         string "Broker certificate override"
         default ""

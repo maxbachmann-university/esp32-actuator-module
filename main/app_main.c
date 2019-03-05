@@ -12,8 +12,16 @@
 #include "interrupt_task.h"
 #include "position_queue.h"
 #include "nvs_flash_initialize.h"
+#include "ota_update_task.h"
 
 static const char *TAG = "MOTOR_CONTROL_MAIN";
+
+#if CONFIG_OTA_UPDATE_ACTIVATED == 1
+    #define test true
+#else
+    #define test false
+#endif
+
 
 void app_main()
 {
@@ -46,4 +54,10 @@ void app_main()
 
     /*  initialize the Interrupt task */
     interrupt_task_init();
+
+    /*  initialize over the air updates */
+    if (test)
+    {
+        ota_update_task_init();
+    }
 }

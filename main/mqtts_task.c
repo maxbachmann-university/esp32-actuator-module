@@ -34,24 +34,21 @@ static esp_err_t json_find_uint8(const cJSON* item, char* str, uint8_t* value)
 
     cJSON *subitem = item->child;
 
-    /*  split objectpath so the objectnames can be compared */
-    char* token = strtok_r(str, "/", &str);
+    /*  string that holds current object item */
+    char* object_item;
 
     /*  while there are objects to compare */
     while (subitem)
     {
-        /*  when the object is wrong the next object gets compared
-        * strlen can be used since strings from strtok_r are always
-        * \0 terminated*/
-        if(strncmp(subitem->string, token, strlen(token)))
+        /*  split objectpath so the objectnames can be compared */
+        object_item = strtok_r(str, "/", &str);
+
+        /*  if theres still a subitem searched it searches for it */
+        if (object_item)
         {
-            subitem = subitem->next;
-        /*  if the object is right the childobjects get compared */
-        }else if (subitem->child && str){
-            subitem = subitem->child;
-            token = strtok_r(str, "/", &str);
-        /*  when the whole objectpath is found and the objects value is a integer */
-        }else if (!str && cJSON_IsNumber(subitem)){
+            subitem = cJSON_GetObjectItemCaseSensitive(subitem, object_item);
+        /*  if the final item has a integer */
+        }else if (cJSON_IsNumber(subitem)){
             const int new_value = subitem->valueint;
             /*  value for Blinds can only be 0-100% */
             if (new_value <= 100 && new_value >= 0)
@@ -59,6 +56,9 @@ static esp_err_t json_find_uint8(const cJSON* item, char* str, uint8_t* value)
                 *value = (uint8_t)new_value;
                 error_code = ESP_OK;
             }
+            break;
+        /*  object has no integer */
+        }else{
             break;
         }
     }

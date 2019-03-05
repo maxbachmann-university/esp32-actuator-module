@@ -82,18 +82,18 @@ static void motor_control_task(void *arg)
 
     for(;;)
     {
-        /*  if a message could be received from the queue within 60 sek */
+        /*  if a message could be received from the queue within 10 sek */
         if (xQueueReceive(position_queue, &new_position,
-            60000/portTICK_RATE_MS) == pdTRUE)
+            10000/portTICK_RATE_MS) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received a new value from the queue: %d",
                 (int)new_position);
             set_new_position(new_position);
 
-        }else{
-            ESP_LOGI(TAG, "Failed to receive a queue value");
         }
-        
+
+        /*  pause the task for 1sek, so a other task could be started if required */
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -128,7 +128,7 @@ esp_err_t motor_control_task_init(void)
         "MOTOR_CONTROL",        /* Name of task */
         2048,                   /* Stack size of task */
         NULL,                   /* parameter of the task */
-        1,                      /* priority of the task (high is important) */
+        4,                      /* priority of the task (high is important) */
         &motor_control_handle);   /* Task handle to keep track of created Task */
 
     task_gpio_init();
