@@ -46,15 +46,4 @@ menu "Example Configuration"
         bool
         default y if UPDATE_JSON_URL != ""
 
-    config BROKER_CERTIFICATE_OVERRIDE
-        string "Broker certificate override"
-        default ""
-        help
-            Please leave empty if broker certificate included from a textfile; otherwise fill in a base64 part of PEM
-            format certificate
-
-    config BROKER_CERTIFICATE_OVERRIDDEN
-        bool
-        default y if BROKER_CERTIFICATE_OVERRIDE != ""
-
 endmenu

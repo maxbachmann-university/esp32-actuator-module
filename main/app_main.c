@@ -17,9 +17,9 @@
 static const char *TAG = "MOTOR_CONTROL_MAIN";
 
 #if CONFIG_OTA_UPDATE_ACTIVATED == 1
-    #define test true
+    #define OTA_UPDATE true
 #else
-    #define test false
+    #define OTA_UPDATE false
 #endif
 
 
@@ -46,17 +46,17 @@ void app_main()
     /*  start Wifi task (runs on core 0) */
     wifi_task_init();
 
-    /*  start MQTT task (runs on core 0) */
+    /*  start MQTT task */
     mqtts_task_init();
 
-    /*  start motor control task (runs on core 1) */
+    /*  start motor control task */
     motor_control_task_init();
 
     /*  initialize the Interrupt task */
     interrupt_task_init();
 
     /*  initialize over the air updates */
-    if (test)
+    if (OTA_UPDATE)
     {
         ota_update_task_init();
     }

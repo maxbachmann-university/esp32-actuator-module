@@ -12,16 +12,9 @@
 
 static const char *TAG = "MQTTS_TASK";
 
-/*  Allows overriding the tls_cert.pem by adding the key using "flash menuconfig"
-* (file tls_cert.pem must still exist, since it´s loaded into the .rodata section anyways)*/
-#if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
-static const uint8_t tls_cert_pem_start[]  = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
-/*  a file with tls data is added to the .rodata section in flash and will be
-*   accessed via symbol names */
-#else
-extern const uint8_t tls_cert_pem_start[]   asm("_binary_tls_cert_pem_start");
-#endif
-extern const uint8_t tls_cert_pem_end[]   asm("_binary_tls_cert_pem_end");
+/*  mqtt tls certificate */
+extern const char tls_cert_pem_start[]   asm("_binary_mqtt_tls_cert_pem_start");
+extern const char tls_cert_pem_end[]   asm("_binary_mqtt_tls_cert_pem_end");
 
 
 /**@brief get a value from JSON strings

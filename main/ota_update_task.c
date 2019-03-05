@@ -13,9 +13,10 @@
 #define FIRMWARE_VERSION 0.1
 
 static const char *TAG = "OTA_TASK";
-/*  server certificates */
-extern const char server_cert_pem_start[] asm("_binary_cert_pem_start");
-extern const char server_cert_pem_end[] asm("_binary_cert_pem_end");
+
+/*  server tls certificate */
+extern const char server_cert_pem_start[] asm("_binary_ota_tls_cert_pem_start");
+extern const char server_cert_pem_end[] asm("_binary_ota_tls_cert_pem_end");
 
 /*  receive buffer */
 char rcv_buffer[200];

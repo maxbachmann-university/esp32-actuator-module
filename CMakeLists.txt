@@ -6,4 +6,5 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 project(mqtt_ssl)
 
-target_add_binary_data(mqtt_ssl.elf "main/tls_cert.pem" TEXT)
+target_add_binary_data(mqtt_ssl.elf "certs/mqtt_tls_cert.pem" TEXT)
+target_add_binary_data(mqtt_ssl.elf "certs/ota_tls_cert.pem" TEXT)
