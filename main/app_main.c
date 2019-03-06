@@ -4,6 +4,7 @@
 #include <string.h>
 #include "esp_system.h"
 #include "esp_log.h"
+#include "esp_err.h"
 
 /*  TASKS */
 #include "wifi_task.h"

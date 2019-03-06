@@ -5,11 +5,12 @@
 #include "position_queue.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "nvs.h"
 #include "driver/gpio.h"
 
 /* STEPPER DEFINITIONS */
-#define STEPPER_COUNT           20000 /* steps needed to open blinds from 0-100% */
-#define STEPPER_DELAY           100   /* Minimum delay required between steps */
+#define STEPPER_COUNT           2000 /* steps needed to open blinds from 0-100% */
+#define STEPPER_DELAY           20   /* Minimum delay required between steps */
 #define GPIO_STEPPER_ENABLE     21    /* enable stepper driver */
 #define GPIO_STEPPER_DIR        22    /* set direction for the stepper */
 #define GPIO_STEPPER_STEP       23    /* Pin that triggers steps */
@@ -26,14 +27,24 @@ static esp_err_t set_new_position(uint8_t new_position)
 
     /*  open NVS flash */
     ESP_LOGI(TAG, "Opening NVS handle");
-    error_code = nvs_open("storage", NVS_READWRITE, &task_nvs_handle);
+    error_code = nvs_open("position", NVS_READWRITE, &task_nvs_handle);
     if (error_code != ESP_OK) return error_code;
+    ESP_LOGI(TAG, "NVS storage partition opened");
 
     /*  Read old position from NVS
     *   old position defaults to 0 if not set in NVS */
     uint8_t old_position = 0;
     error_code = nvs_get_u8(task_nvs_handle, "old_position", &old_position);
-    if (error_code != ESP_OK) return error_code;
+    /*  value can´t be found on first run -> ESP_ERR_NVS_NOT_FOUND */
+    if (error_code == ESP_OK)
+    {
+        ESP_LOGI(TAG, "NVS old position was %d", old_position);
+    }else if (error_code == ESP_ERR_NVS_NOT_FOUND)
+    {
+        ESP_LOGI(TAG, "Value it not initialized yet");
+    }else{
+        return error_code;
+    }
 
     /* Calculate how many Steps are needed */
     int32_t movement = round((new_position - old_position) * (STEPPER_COUNT/100));
@@ -56,16 +67,19 @@ static esp_err_t set_new_position(uint8_t new_position)
     }
 
     /*  Write new position to NVS */
-    error_code = nvs_set_u8(task_nvs_handle, "new_position", new_position);
+    ESP_LOGI(TAG, "save new position in Non Volatile Storage");
+    error_code = nvs_set_u8(task_nvs_handle, "old_position", new_position);
     if (error_code != ESP_OK) return error_code;
 
     /*  Commit written value.
     *   After setting any values, nvs_commit() must be called to ensure changes are written
     *   to flash storage. */
+    ESP_LOGI(TAG, "Commit changes to Non Volatile Storage");
     error_code = nvs_commit(task_nvs_handle);
     if (error_code != ESP_OK) return error_code;
 
     /*  Close NVS */
+    ESP_LOGI(TAG, "Close Non Volatile Storage");
     nvs_close(task_nvs_handle);
     return ESP_OK;
 }
@@ -75,6 +89,7 @@ static esp_err_t set_new_position(uint8_t new_position)
  */
 static void motor_control_task(void *arg)
 {
+    ESP_LOGI(TAG, "Start Motor Control Task");
     /* activate stepper driver so it does not move */
     gpio_set_level(GPIO_STEPPER_ENABLE, 1);
 
@@ -88,8 +103,11 @@ static void motor_control_task(void *arg)
         {
             ESP_LOGI(TAG, "Received a new value from the queue: %d",
                 (int)new_position);
-            set_new_position(new_position);
-
+            esp_err_t error_code = set_new_position(new_position);
+            if (error_code != ESP_OK)
+            {
+                ESP_LOGI(TAG, "ERROR: %d", error_code);
+            }
         }
 
         /*  pause the task for 1sek, so a other task could be started if required */

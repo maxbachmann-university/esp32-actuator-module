@@ -27,21 +27,24 @@ static esp_err_t json_find_uint8(const cJSON* item, char* str, uint8_t* value)
 
     cJSON *subitem = item->child;
 
-    /*  string that holds current object item */
-    char* object_item;
+    /*  split objectpath so the objectnames can be compared */
+    char* token = strtok_r(str, "/", &str);
 
     /*  while there are objects to compare */
     while (subitem)
     {
-        /*  split objectpath so the objectnames can be compared */
-        object_item = strtok_r(str, "/", &str);
-
-        /*  if theres still a subitem searched it searches for it */
-        if (object_item)
+        /*  when the object is wrong the next object gets compared
+        * strlen can be used since strings from strtok_r are always
+        * \0 terminated*/
+        if(strncmp(subitem->string, token, strlen(token)))
         {
-            subitem = cJSON_GetObjectItemCaseSensitive(subitem, object_item);
-        /*  if the final item has a integer */
-        }else if (cJSON_IsNumber(subitem)){
+            subitem = subitem->next;
+        /*  if the object is right the childobjects get compared */
+        }else if (subitem->child && str){
+            subitem = subitem->child;
+            token = strtok_r(str, "/", &str);
+        /*  when the whole objectpath is found and the objects value is a integer */
+        }else if (!str && cJSON_IsNumber(subitem)){
             const int new_value = subitem->valueint;
             /*  value for Blinds can only be 0-100% */
             if (new_value <= 100 && new_value >= 0)
@@ -49,9 +52,6 @@ static esp_err_t json_find_uint8(const cJSON* item, char* str, uint8_t* value)
                 *value = (uint8_t)new_value;
                 error_code = ESP_OK;
             }
-            break;
-        /*  object has no integer */
-        }else{
             break;
         }
     }
@@ -146,12 +146,13 @@ esp_err_t mqtts_task_init(void)
         .username = CONFIG_BROKER_USERNAME,
         .password = CONFIG_BROKER_PASSWORD,
         .event_handle = mqtt_event_handler,
+        /*  tls not activated on the mqtt broker yet */
         //.cert_pem = (const char *)tls_cert_pem_start,
     };
 
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
     esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
-    esp_err_t error = esp_mqtt_client_start(client);
-    ESP_LOGI(TAG, "[APP] Error %d", error);
-    return ESP_OK;
+    esp_err_t error_code = esp_mqtt_client_start(client);
+    ESP_LOGI(TAG, "[APP] Error %d", error_code);
+    return error_code;
 }

@@ -27,8 +27,9 @@ static esp_err_t set_end_stop_position(uint32_t io_num)
 
     /*  open NVS flash */
     ESP_LOGI(TAG, "Opening NVS handle");
-    error_code = nvs_open("storage", NVS_READWRITE, &task_nvs_handle);
+    error_code = nvs_open("position", NVS_READWRITE, &task_nvs_handle);
     if (error_code != ESP_OK) return error_code;
+    ESP_LOGI(TAG, "NVS storage partition opened");
 
     /* Move the blinds to the new position */
     if (io_num == GPIO_HIGH_END_STOP)
@@ -39,16 +40,19 @@ static esp_err_t set_end_stop_position(uint32_t io_num)
     }
 
     /*  Write new position to NVS */
-    error_code = nvs_set_u8(task_nvs_handle, "new_position", new_position);
+    ESP_LOGI(TAG, "save end stop position in Non Volatile Storage");
+    error_code = nvs_set_u8(task_nvs_handle, "old_position", new_position);
     if (error_code != ESP_OK) return error_code;
 
     /*  Commit written value.
     *   After setting any values, nvs_commit() must be called to ensure changes are written
     *   to flash storage. */
+    ESP_LOGI(TAG, "Commit changes to Non Volatile Storage");
     error_code = nvs_commit(task_nvs_handle);
     if (error_code != ESP_OK) return error_code;
 
     /*  Close NVS */
+    ESP_LOGI(TAG, "Close Non Volatile Storage");
     nvs_close(task_nvs_handle);
     return ESP_OK;
 }
@@ -95,11 +99,13 @@ esp_err_t interrupt_task_init(void)
 
     /* SET GPIO CONFIG FOR END STOPS */
     /*  interrupt of rising edge */
-    io_conf.intr_type = GPIO_PIN_INTR_POSEDGE;
+    io_conf.intr_type = GPIO_PIN_INTR_NEGEDGE;
     /*  bit mask of the pins */
     io_conf.pin_bit_mask = GPIO_END_STOPS;
     /*  set as input mode */ 
     io_conf.mode = GPIO_MODE_INPUT;
+    /*  disable pull-down mode */
+    io_conf.pull_down_en = 0;
     /*  enable pull-up mode */
     io_conf.pull_up_en = 1;
     /*  configure GPIO with the given settings */
